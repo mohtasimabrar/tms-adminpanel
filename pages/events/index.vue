@@ -2,8 +2,8 @@
     <div class="px-2 py-2 sm:px-3 lg:px-4 w-full">
         <h2 class="text-2xl font-bold pb-2">Events</h2>
         <div class="border-round" style="overflow: hidden;">
-            <DataTable :value="events.data" tableStyle="min-width: 50rem" paginator :rows="5"
-                :rowsPerPageOptions="[5, 10, 20, 50]">
+            <DataTable :value="events.data" tableStyle="min-width: 50rem" paginator :rows="20"
+                :rowsPerPageOptions="[20, 50]">
                 <Column field="eventId" header="Id"></Column>
                 <Column field="eventName" header="Event Name"></Column>
                 <Column field="eventCapacity" header="Event Capacity"></Column>
@@ -25,12 +25,21 @@
         </div>
     </div>
 </template>
-  
+
 <script setup>
 definePageMeta({
-  middleware: 'auth'
+    middleware: 'auth'
 })
-const { data: events } = await useFetch('https://api.countersbd.com/api/v1/event/all')
+
+const userToken = useCookie('token')
+const token = "Bearer " + userToken.value
+
+const { data: events } = await useFetch('https://api.countersbd.com/api/v1/event/admin/all', {
+    headers: {
+        "Authorization": token
+    },
+    method: 'get'
+})
 </script>
 
 <style scoped>

@@ -20,26 +20,39 @@
                 <label>Password</label>
                 <GlobalInputText type="password" v-model="userInfo.password" placeholder="Password" />
             </div>
-            
+
+            <div class="field col-12 md:col-6">
+                <label>Role</label>
+                <select v-model="userInfo.role" class="w-full p-2 border rounded shadow-sm">
+                    <option disabled value="">Select Role</option>
+                    <option value=1>User</option>
+                    <option value=2>Admin</option>
+                </select>
+            </div>
+
             <div class="field col-12 md:col-10"></div>
             <div class="field col-12 md:col-2">
                 <GlobalButton title="Add User" class="mt-5" @buttonTapped="addUser" />
             </div>
 
         </div>
-        
+
     </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
 definePageMeta({
-  middleware: 'auth'
+    middleware: 'auth'
 })
+
 const userInfo = ref({
     email: "",
     password: "",
     phoneNumber: "",
-    userName: ""
+    userName: "",
+    userRole: "" // Role will be set to 1 for User or 2 for Admin based on the selection
 })
 
 const addUser = async () => {

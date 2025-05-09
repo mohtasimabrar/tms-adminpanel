@@ -29,19 +29,23 @@ const onSubmit = async () => {
     body: {
       email: email.value,
       password: password.value,
-      userRole: 2
+      userRole: email.value === 'superadmin' ? 0 : 2
     }
-  })
+  });
+
   if (responseData.value.responseCode === 200) {
-    const userToken = useCookie('token')
-    userToken.value = responseData.value.data.token
-    console.log("from cookieeee")
-    console.log(userToken.value)
-    const isAuthenticated = isAuthenticatedState()
-    isAuthenticated.value = true
-    navigateTo("/")
+    const userToken = useCookie('token');
+    userToken.value = responseData.value.data.token;
+
+    const userRole = useCookie('userRole');
+    userRole.value = email.value === 'superadmin' ? 0 : 2;
+
+    const isAuthenticated = isAuthenticatedState();
+    isAuthenticated.value = true;
+
+    navigateTo("/");
   }
-}
+};
 
 
 </script>

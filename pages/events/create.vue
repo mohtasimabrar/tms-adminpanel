@@ -14,14 +14,26 @@
             </div>
             <div class="field col-12 md:col-2">
                 <label>Start Date</label>
-                <GlobalInputDate v-model="eventDetails.eventStartDate" placeholder="DD/MM/YYYY HH:MM"/>
+                <GlobalInputDate v-model="eventDetails.eventStartDate" placeholder="DD/MM/YYYY HH:MM" />
             </div>
             <div class="field col-12 md:col-2">
                 <label>End Date</label>
-                <GlobalInputDate v-model="eventDetails.eventEndDate" placeholder="DD/MM/YYYY HH:MM"/>
+                <GlobalInputDate v-model="eventDetails.eventEndDate" placeholder="DD/MM/YYYY HH:MM" />
             </div>
-            
-            
+            <div class="field col-12 md:col-6">
+                <label>Event Description</label>
+                <GlobalInputText v-model="eventDetails.eventDescription" placeholder="Name" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label>Location</label>
+                <GlobalInputText v-model="eventDetails.eventLocation" placeholder="Location" />
+            </div>
+            <div class="field col-12 md:col-6">
+                <label>Event Banner Image</label>
+                <input type="file" @change="handleImageUpload" accept="image/*" />
+            </div>
+
+
             <div class="field col-12 md:col-12">
                 <h3>Category List</h3>
             </div>
@@ -46,7 +58,8 @@
             </template>
             <div class="field col-12 md:col-11"></div>
             <div class="field col-12 md:col-1">
-                <GlobalButton class=""  icon="pi pi-plus" style="background-color: #2385B4;" @buttonTapped="addCategoryType" />
+                <GlobalButton class="" icon="pi pi-plus" style="background-color: #2385B4;"
+                    @buttonTapped="addCategoryType" />
             </div>
             <div class="field col-12 md:col-10"></div>
             <div class="field col-12 md:col-2">
@@ -54,19 +67,22 @@
             </div>
 
         </div>
-        
+
     </div>
 </template>
 
 <script setup>
 definePageMeta({
-  middleware: 'auth'
+    middleware: 'auth'
 })
 const eventDetails = ref({
     eventCapacity: null,
     eventEndDate: "",
     eventName: "",
-    eventStartDate: ""
+    eventStartDate: "",
+    eventDescription: "",
+    eventLocation: "",
+    eventRules: ""
 })
 const categoryDetails = ref([
     {
@@ -76,6 +92,14 @@ const categoryDetails = ref([
         categoryPrice: null
     }
 ])
+
+const eventImage = ref(null); // To store the selected image
+const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        eventImage.value = file;
+    }
+};
 
 const deleteCategoryType = (index) => {
     if (index > -1) {
@@ -94,30 +118,40 @@ const addCategoryType = () => {
 };
 
 const addEvent = async () => {
-    const eventData = {
-        eventCapacity: eventDetails.value.eventCapacity,
-        eventEndDate: eventDetails.value.eventEndDate,
-        eventName: eventDetails.value.eventName,
-        eventStartDate: eventDetails.value.eventStartDate,
-        categoryList: categoryDetails.value
+    const formData = new FormData();
+
+    // Append form fields
+    formData.append('eventName', eventDetails.value.eventName);
+    formData.append('eventCapacity', eventDetails.value.eventCapacity);
+    formData.append('eventEndDate', eventDetails.value.eventEndDate);
+    formData.append('eventStartDate', eventDetails.value.eventStartDate);
+    formData.append('eventDescription', eventDetails.value.eventDescription);
+    formData.append('eventLocation', eventDetails.value.eventLocation);
+    formData.append('eventRules', eventDetails.value.eventRules);
+    formData.append('categoryListJson', JSON.stringify(categoryDetails.value));
+
+    // Append the image file if available
+    if (eventImage.value) {
+        formData.append('eventBannerImage', eventImage.value);
     }
-    const userToken = useCookie('token')
-    const token = "Bearer " + userToken.value
-    console.log(token)
-    console.log(eventData)
+
+    const userToken = useCookie('token');
+    const token = "Bearer " + userToken.value;
+
+    console.log(token);
+    console.log([...formData]); // Debugging purpose to view formData
+
     const { data: responseData } = await useFetch('https://api.countersbd.com/api/v1/event/create', {
         headers: {
             "Authorization": token
         },
         method: 'post',
-        body: eventData
-    })
-    console.log(responseData)
-    //   if (responseData.value.responseCode === 200) {
-    //     window.localStorage.setItem("token", responseData.value.data.token)
-    //     const isAuthenticated = isAuthenticatedState()
-    //     isAuthenticated.value = true
-    //     navigateTo("/")
-    //   }
+        body: formData
+    });
+    console.log(responseData);
+
+    if (responseData.value.responseCode === 200) {
+        navigateTo("/");
+    }
 };
 </script>
